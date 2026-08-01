@@ -24,7 +24,7 @@ Estou conduzindo este projeto de ponta a ponta (Solo). Atualmente, o foco está 
 
 Abaixo estão os protótipos de baixa fidelidade criados para alinhar as expectativas e garantir a melhor usabilidade para a equipe da ONG antes do desenvolvimento.
 
-<img src="esboco2.png" alt="Wireframes do aplicativo mostrando painel do coordenador e telas do motorista">
+<img src="https://github.com/Ohlipeh/app-logistica-familia-feliz/blob/main/assets/esboco2.png" alt="Wireframes do aplicativo mostrando painel do coordenador e telas do motorista">
 
 ## 🗺️ Próximos Passos (Roadmap)
 
