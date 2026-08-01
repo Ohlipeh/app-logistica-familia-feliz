@@ -1,27 +1,32 @@
 # 🚚 App de Gestão Logística - ONG Família Feliz
 
-Projeto de extensão universitária (Uniasselvi) focado em desenvolver uma solução móvel para otimizar a gestão de frota, coletas e deslocamentos de uma rede de acolhimento social em Blumenau/SC.
+[![Status do Projeto](https://img.shields.io/badge/Status-Fase%20de%20Prototipagem-blue)](#)
+[![Contexto](<https://img.shields.io/badge/Contexto-Extensão%20Universitária%20(Uniasselvi)-orange>)](#)
+
+Uma solução móvel desenvolvida para otimizar a gestão de frota, rotas de coleta e deslocamentos diários de uma rede de acolhimento social em Blumenau/SC.
 
 ## 🎯 O Problema
 
-A instituição precisava de um sistema centralizado para organizar o uso de seus veículos, conectando as solicitações dos educadores (como transporte para postos de saúde ou coletas de doações) com a execução dos motoristas, além de fornecer relatórios de uso para a gestão.
+A instituição precisava de um sistema centralizado para organizar o uso de seus veículos. O desafio principal era conectar, de forma eficiente, as solicitações diárias dos educadores (como transporte para postos de saúde ou coletas de doações) com a execução dos motoristas, além de fornecer relatórios precisos de uso para a gestão.
 
-## 🔄 Status Atual do Projeto: Fase de Prototipagem
+## 🚀 Status e Evolução do Projeto
 
-Atualmente, o projeto encontra-se na fase de validação visual e de fluxo junto à coordenação da ONG.
+Estou conduzindo este projeto de ponta a ponta (Solo). Atualmente, o foco está na Engenharia de Requisitos e validação de fluxo junto à coordenação da ONG.
 
-**Últimas atualizações:**
+**Progresso:**
 
 - [x] Levantamento de Requisitos iniciais.
-- [x] Esboço v1 apresentado.
-- [x] Feedback recebido: Necessidade de adicionar dashboard para monitoramento em tempo real e geração de relatórios de uso.
-- [x] **Esboço v2 (Atual):** Fluxo atualizado com telas de check-in/out para motoristas e painel gerencial. Aguardando aprovação final para início do design de Interface (UI).
+- [x] Esboço v1 construído e apresentado.
+- [x] Pivotagem pós-feedback: Adição de dashboard para monitoramento em tempo real e geração de relatórios de uso.
+- [x] **Fase Atual (Esboço v2):** Fluxo atualizado com telas de check-in/out para motoristas e painel gerencial. Aguardando aprovação final para início do design de Interface (UI).
 
-## 🖼️ Wireframes (Esboço 2)
+## 🖼️ Wireframes e Fluxo de Uso
 
-![Esboço 2](./assets/esboco2.png)
+Abaixo estão os protótipos de baixa fidelidade criados para alinhar as expectativas e garantir a melhor usabilidade para a equipe da ONG antes do desenvolvimento.
 
-## 🚀 Próximos Passos
+<img src="esboco2.png" alt="Wireframes do aplicativo mostrando painel do coordenador e telas do motorista">
+
+## 🗺️ Próximos Passos (Roadmap)
 
 - [ ] Aprovação do fluxo (Wireframe v2) pela coordenação.
 - [ ] Criação do Design de Interface (UI) em alta fidelidade.
