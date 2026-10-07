@@ -11,14 +11,17 @@ A instituição precisava de um sistema centralizado para organizar o uso de seu
 
 ## 🚀 Status e Evolução do Projeto
 
-Estou conduzindo este projeto de ponta a ponta (Solo). Atualmente, o foco está na Engenharia de Requisitos e validação de fluxo junto à coordenação da ONG.
+Estou conduzindo este projeto de ponta a ponta. Após a validação do fluxo visual, o projeto avançou para a estruturação do backend e da base de dados.
 
 **Progresso:**
 
 - [x] Levantamento de Requisitos iniciais.
 - [x] Esboço v1 construído e apresentado.
-- [x] Pivotagem pós-feedback: Adição de dashboard para monitoramento em tempo real e geração de relatórios de uso.
-- [x] **Fase Atual (Esboço v2):** Fluxo atualizado com telas de check-in/out para motoristas e painel gerencial. Aguardando aprovação final para início do design de Interface (UI).
+- [x] Pivotagem pós-feedback: Adição de dashboard para monitorização em tempo real.
+- [x] **Aprovação do fluxo visual (Wireframes atualizados).**
+- [x] **Modelagem da Base de Dados (DER) e implementação em SQLite.**
+- [x] **Criação da lógica inicial de Backend (Python/POO) para Check-in/Check-out.**
+- [ ] Início do desenvolvimento da Interface do Utilizador (UI) em alta fidelidade.
 
 ## 🖼️ Wireframes e Fluxo de Uso
 
@@ -26,9 +29,22 @@ Abaixo estão os protótipos de baixa fidelidade criados para alinhar as expecta
 
 <img src="https://github.com/Ohlipeh/app-logistica-familia-feliz/blob/main/assets/esboco2.png" alt="Wireframes do aplicativo mostrando painel do coordenador e telas do motorista">
 
+## 🗄️ Arquitetura e Base de Dados
+
+Para suportar o fluxo de informação em tempo real, a base de dados foi estruturada utilizando **SQLite**. A lógica de controle de frota está sendo desenvolvida em **Python**, aplicando Programação Orientada a Objetos (POO).
+
+As tabelas principais relacionam os motoristas, os veículos e o histórico de utilização (Check-in/Check-out):
+
+![Diagrama de Entidade-Relacionamento](./assets/der.png)
+
+## 🖼️ Fluxo de Utilização (Protótipo Atualizado)
+
+Abaixo encontra-se o fluxo de baixa/média fidelidade aprovado para garantir a melhor usabilidade para a equipa da ONG.
+
+![Fluxo Atualizado](./assets/fluxo_v2.png)
+
 ## 🗺️ Próximos Passos (Roadmap)
 
-- [ ] Aprovação do fluxo (Wireframe v2) pela coordenação.
 - [ ] Criação do Design de Interface (UI) em alta fidelidade.
-- [ ] Definição da arquitetura de Banco de Dados.
-- [ ] Início do desenvolvimento Mobile.
+- [ ] Integração do backend em Python com a interface móvel.
+- [ ] Implementação do módulo de relatórios e exportação de dados.
