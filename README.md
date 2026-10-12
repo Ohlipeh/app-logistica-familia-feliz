@@ -15,13 +15,13 @@ Estou conduzindo este projeto de ponta a ponta. Após a validação do fluxo vis
 
 **Progresso:**
 
-- [x] Levantamento de Requisitos iniciais.
-- [x] Esboço v1 construído e apresentado.
-- [x] Pivotagem pós-feedback: Adição de dashboard para monitorização em tempo real.
-- [x] **Aprovação do fluxo visual (Wireframes atualizados).**
-- [x] **Modelagem da Base de Dados (DER) e implementação em SQLite.**
-- [x] **Criação da lógica inicial de Backend (Python/POO) para Check-in/Check-out.**
-- [ ] Início do desenvolvimento da Interface do Utilizador (UI) em alta fidelidade.
+**Progresso:**
+
+- [x] Levantamento de Requisitos e validação de wireframes.
+- [x] Modelagem da Base de Dados (DER) e implementação em SQLite.
+- [x] **Mapeamento de Processos (UML): Casos de Uso e Diagrama de Atividades.**
+- [x] **Desenvolvimento da Interface Gráfica (UI) do Painel de Gestão utilizando Python e CustomTkinter.**
+- [ ] Integração final entre Interface (Front-end) e Base de Dados (Back-end).
 
 ## 🖼️ Wireframes e Fluxo de Uso
 
@@ -43,8 +43,27 @@ Abaixo encontra-se o fluxo de baixa/média fidelidade aprovado para garantir a m
 
 ![Fluxo Atualizado](./assets/fluxo_v2.png)
 
-## 🗺️ Próximos Passos (Roadmap)
+## 📐 Engenharia de Software (UML)
 
-- [ ] Criação do Design de Interface (UI) em alta fidelidade.
-- [ ] Integração do backend em Python com a interface móvel.
-- [ ] Implementação do módulo de relatórios e exportação de dados.
+Para garantir que todas as regras de negócio fossem respeitadas antes de escrever a interface, o sistema foi mapeado utilizando diagramas UML:
+
+**Diagrama de Casos de Uso:**
+Mapeia as interações entre os atores principais: Doador (Comunidade), Gestor/Coordenador e Motorista.
+![Casos de Uso](./assets/casos_de_uso.png)
+
+**Diagrama de Atividades:**
+Detalha o fluxo de uma demanda de transporte, desde o recebimento do pedido pelo Gestor, passando pelo check-in do Motorista no aplicativo, até a gravação dos dados para o relatório final pelo Sistema.
+![Diagrama de Atividades](./assets/diagrama_atividades.png)
+
+## 💻 Interface Gráfica (Painel do Coordenador)
+
+O desenvolvimento da interface de gestão já foi iniciado. A aplicação desktop foi construída em **Python**, utilizando a biblioteca **CustomTkinter** para entregar um visual moderno (Dark Mode) e responsivo.
+
+O dashboard permite a visualização rápida de:
+
+- Veículos Livres
+- Veículos em Rota
+- Demandas Pendentes
+- Tabela de Atividades do Dia em tempo real
+
+![Dashboard UI](./assets/dashboard_ui.png)

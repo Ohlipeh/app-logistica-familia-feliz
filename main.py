@@ -1,55 +1,45 @@
-from datetime import datetime
 import sqlite3
 
-
-class Veiculo:
-    def __init__(self, placa, modelo, km_atual):
-        self.placa = placa
-        self.modelo = modelo
-        self.km_atual = km_atual
-        self.status = "Livre"
-
-    def exibir_informacoes(self):
-        print(f"Placa: {self.placa} - Modelo: {self.modelo} - Km: {self.km_atual}")
+# Importa a classe do arquivo que você acabou de criar (se chamou de classes.py, mude aqui)
+from database.repositorio import ControleFrota
 
 
-class ControleFrota:
-    def __init__(self, db_nome="sistema_ong.db"):
-        self.db_nome = db_nome
+def preparar_banco_para_teste():
+    """
+    Função rápida só para inserir 1 motorista e 1 carro no banco.
+    Isso é necessário porque a tabela checkin exige que o carro e o motorista existam
+    (por causa da Foreign Key!).
+    """
+    conexao = sqlite3.connect("sistema_ong.db")
+    cursor = conexao.cursor()
 
-    def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
-        data = datetime.now()
-
-        # Conecta diretamente no banco
-        conexao = sqlite3.connect(self.db_nome)
-        cursor = conexao.cursor()
-
-        # Adicionando 'data_hora_retirada'
+    # Ignora o erro se o motorista ou carro já existirem no teste anterior
+    try:
         cursor.execute(
-            "INSERT INTO checkin_checkout (id_motorista, id_veiculo, data_hora_retirada, km_inicial) VALUES (?, ?, ?, ?)",
-            (id_motorista, id_veiculo, data, km_inicial),
+            "INSERT INTO motorista (nome_completo, cnh, status) VALUES ('João Silva', '123456789', 'Ativo')"
+        )
+        cursor.execute(
+            "INSERT INTO veiculos (placa, modelo, km_atual, status) VALUES ('ABC-1234', 'HB20', 50000, 'Livre')"
         )
         conexao.commit()
-        conexao.close()
+    except sqlite3.IntegrityError:
+        pass  # Se já existe, não faz nada
 
-        print(f"Check-in realizado para o veículo ID {id_veiculo}.")
+    conexao.close()
 
-    def realizar_checkout(self, id_motorista, id_veiculo, km_final):
-        data = datetime.now()
 
-        conexao = sqlite3.connect(self.db_nome)
-        cursor = conexao.cursor()
+# --- INÍCIO DO SCRIPT DE TESTE ---
 
-        cursor.execute(
-            """
-            UPDATE checkin_checkout
-            SET data_hora_devolucao = ?, km_final = ?
-            WHERE id_veiculo = ? AND data_hora_devolucao IS NULL
-        """,
-            (data, km_final, id_veiculo),
-        )
+print("Preparando ambiente de teste...")
+preparar_banco_para_teste()
 
-        conexao.commit()
-        conexao.close()
+print("\nIniciando sistema...")
+sistema = ControleFrota()
 
-        print(f"Checkout realizado para o veículo ID {id_veiculo}.")
+# Simulando um Check-in: Motorista ID 1 pegou o Carro ID 1 com 50.000 KM
+sistema.realizar_checkin(id_motorista=1, id_veiculo=1, km_inicial=50000)
+
+# Simulando um Check-out: Ele devolveu o Carro ID 1 no final do dia com 50.150 KM
+sistema.realizar_checkout(id_veiculo=1, km_final=50150)
+
+print("\nTeste finalizado!")
