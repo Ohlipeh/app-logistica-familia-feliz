@@ -18,6 +18,41 @@ class ControleFrota:
     def __init__(self, db_nome="sistema_ong.db"):
         self.db_nome = db_nome
 
+    def cadastrar_demanda(self, tipo_demanda, origem, destino):
+        # Captura a data/hora atual para usar como previsão inicial
+        data_prevista = datetime.now()
+
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # O id_veiculo fica vazio (NULL) por enquanto, porque a demanda acabou de ser criada
+        # e ainda não tem um carro atribuído.
+        cursor.execute(
+            "INSERT INTO demandas (tipo_demanda, origem, destino, data_horario_previsto, status) VALUES (?, ?, ?, ?, ?)",
+            (tipo_demanda, origem, destino, data_prevista, "Pendente"),
+        )
+
+        conexao.commit()
+        conexao.close()
+        print(f"Demanda de {tipo_demanda} para {destino} cadastrada no banco!")
+
+    def buscar_demandas_recentes(self):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # O SELECT busca os campos na ordem que exibir.
+        # ORDER BY id_demanda DESC faz aparecer as mais novas primeiro.
+        cursor.execute("""
+            SELECT data_horario_previsto, tipo_demanda, origem, status 
+            FROM demandas 
+            ORDER BY id_demanda DESC LIMIT 5
+        """)
+
+        resultados = cursor.fetchall()  # Captura todas as linhas encontradas
+        conexao.close()
+
+        return resultados
+
     def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
         data = datetime.now()
 

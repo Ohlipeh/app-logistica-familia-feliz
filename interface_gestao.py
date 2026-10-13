@@ -58,7 +58,11 @@ class DashboardOng(ctk.CTk):
         self.frame_principal.grid_columnconfigure(0, weight=1)
 
         # Criação do Botão +Nova Demanda (tirei o transparente para ficar azul igual ao Figma)
-        botao = ctk.CTkButton(self.frame_principal, text="+ Nova Demanda")
+        botao = ctk.CTkButton(
+            self.frame_principal,
+            text="+ Nova Demanda",
+            command=self.abrir_tela_nova_demanda,
+        )
 
         # Aqui uso o 'e' (East/Direita) ou 'ne' (Topo-Direita) dentro do grid
         botao.grid(row=0, column=0, padx=20, pady=20, sticky="e")
@@ -158,59 +162,135 @@ class DashboardOng(ctk.CTk):
         cabecalho_horario.grid(row=1, column=0, padx=15, pady=5, sticky="w")
 
         # Cabeçalho TIPO em AZUL/CIANO
-        cabecalho_horario = ctk.CTkLabel(
+        cabecalho_tipo = ctk.CTkLabel(
             self.frame_tabela,
             text="TIPO",
             font=("Arial", 12, "bold"),
             text_color="#00d2ff",
         )
-        cabecalho_horario.grid(row=1, column=1, padx=15, pady=5, sticky="w")
+        cabecalho_tipo.grid(row=1, column=1, padx=15, pady=5, sticky="w")
 
         # Cabeçalho ORIGEM em AZUL/CIANO
-        cabecalho_horario = ctk.CTkLabel(
+        cabecalho_origem = ctk.CTkLabel(
             self.frame_tabela,
             text="ORIGEM",
             font=("Arial", 12, "bold"),
             text_color="#00d2ff",
         )
-        cabecalho_horario.grid(row=1, column=2, padx=15, pady=5, sticky="w")
+        cabecalho_origem.grid(row=1, column=2, padx=15, pady=5, sticky="w")
 
         # Cabeçalho STATUS em AZUL/CIANO
-        cabecalho_horario = ctk.CTkLabel(
+        cabecalho_status = ctk.CTkLabel(
             self.frame_tabela,
             text="STATUS",
             font=("Arial", 12, "bold"),
             text_color="#00d2ff",
         )
-        cabecalho_horario.grid(row=1, column=3, padx=15, pady=5, sticky="w")
+        cabecalho_status.grid(row=1, column=3, padx=15, pady=5, sticky="w")
+        self.atualizar_tabela_demandas()
 
-        # --- DADOS DA TABELA ---
+    def atualizar_tabela_demandas(self):
+        # 1. Limpa os dados antigos da tabela, exceto os cabeçalhos que estão nas linhas 0 e 1
+        for widget in self.frame_tabela.winfo_children():
+            info = widget.grid_info()
+            # Se o elemento estiver da linha 2 para baixo, apago para redesenhar
+            if info and info.get("row", 0) >= 2:
+                widget.destroy()
 
-        # Dado do horário que fica debaixo do cabeçalho
-        dado_horario = ctk.CTkLabel(
-            self.frame_tabela, text="HORÁRIO: 10:30", font=("Arial", 12)
+        # 2. Puxa os dados reais do banco
+        demandas = self.sistema.buscar_demandas_recentes()
+
+        # 3. Cria uma linha na tela para cada demanda encontrada no banco
+        for index, demanda in enumerate(demandas):
+            linha_atual = (
+                index + 2
+            )  # A primeira demanda fica na row=2, a segunda na row=3, etc.
+
+            # demanda[0] é a data. Vou cortar só a hora (ex: de "2026-10-13 14:30:00.123" para "14:30")
+            horario = demanda[0].split(" ")[1][:5] if " " in demanda[0] else demanda[0]
+            tipo = demanda[1]
+            origem = demanda[2]
+            status = demanda[3]
+
+            # Desenha as 4 colunas desta linha
+            ctk.CTkLabel(
+                self.frame_tabela, text=f"HORÁRIO: {horario}", font=("Arial", 12)
+            ).grid(row=linha_atual, column=0, padx=15, pady=10, sticky="w")
+            ctk.CTkLabel(
+                self.frame_tabela, text=f"TIPO: {tipo}", font=("Arial", 12)
+            ).grid(row=linha_atual, column=1, padx=15, pady=10, sticky="w")
+            ctk.CTkLabel(
+                self.frame_tabela, text=f"ORIGEM: {origem}", font=("Arial", 12)
+            ).grid(row=linha_atual, column=2, padx=15, pady=10, sticky="w")
+            ctk.CTkLabel(
+                self.frame_tabela, text=f"STATUS: {status}", font=("Arial", 12)
+            ).grid(row=linha_atual, column=3, padx=15, pady=10, sticky="w")
+
+    def abrir_tela_nova_demanda(self):
+        # 1. Cria a janela flutuante
+        janela_demanda = ctk.CTkToplevel(self)
+        janela_demanda.title("Cadastrar Nova Demanda")
+        janela_demanda.geometry("600x400")
+
+        # Faz com que a janela principal fique bloqueada enquanto esta estiver aberta (opcional, mas recomendado)
+        janela_demanda.grab_set()
+
+        # 2. Título da Janela
+        titulo = ctk.CTkLabel(
+            janela_demanda, text="CADASTRAR NOVA DEMANDA", font=("Arial", 16, "bold")
         )
-        dado_horario.grid(row=2, column=0, padx=15, pady=10, sticky="w")
+        titulo.pack(pady=20)
 
-        # Dado do tipo que fica debaixo do cabeçalho
-        dado_tipo = ctk.CTkLabel(
-            self.frame_tabela, text="TIPO: COLETA DE DOAÇÃO", font=("Arial", 12)
+        # 3. Campo Tipo de Demanda
+        entrada_demanda = ctk.CTkComboBox(
+            janela_demanda,
+            values=["Coleta de Doação", "Cesta Básica", "Transporte Médico"],
+            width=400,
         )
-        dado_tipo.grid(row=2, column=1, padx=15, pady=10, sticky="w")
+        entrada_demanda.pack(pady=10)
 
-        # Dado do origem que fica debaixo do cabeçalho
-        dado_origem = ctk.CTkLabel(
-            self.frame_tabela, text="ORIGEM: MERCADO/SEDE X", font=("Arial", 12)
+        # 4. Campo Endereço de Origem
+        entrada_origem = ctk.CTkEntry(
+            janela_demanda, placeholder_text="Endereço de Origem", width=400
         )
-        dado_origem.grid(row=2, column=2, padx=15, pady=10, sticky="w")
+        entrada_origem.pack(pady=10)
 
-        # Dado do status que fica debaixo do cabeçalho
-        dado_status = ctk.CTkLabel(
-            self.frame_tabela,
-            text="STATUS: CONCLUIDO",
-            font=("Arial", 12),
+        # Campo Endereço de Destino
+        entrada_destino = ctk.CTkEntry(
+            janela_demanda, placeholder_text="Endereço de Destino", width=400
         )
-        dado_status.grid(row=2, column=3, padx=15, pady=10, sticky="w")
+        entrada_destino.pack(pady=10)
+
+        # Frame para os botões
+        frame_botoes = ctk.CTkFrame(janela_demanda, fg_color="transparent")
+        frame_botoes.pack(pady=10)
+
+        # --- A FUNÇÃO QUE SALVA OS DADOS ---
+        def salvar_no_banco():
+            # 1. Pega os valores que estão escritos nas caixinhas
+            tipo = entrada_demanda.get()
+            orig = entrada_origem.get()
+            dest = entrada_destino.get()
+
+            # 2. Chama a função da classe ControleFrota
+            self.sistema.cadastrar_demanda(tipo_demanda=tipo, origem=orig, destino=dest)
+            self.atualizar_tabela_demandas()
+
+            # 3. Fecha a janela flutuante
+            janela_demanda.destroy()
+
+        # --- BOTÕES ATUALIZADOS ---
+        # Botão cadastrar (agora aponta para a função salvar_no_banco)
+        botao_cadastrar_demanda = ctk.CTkButton(
+            frame_botoes, text="Cadastrar Demanda", command=salvar_no_banco
+        )
+        botao_cadastrar_demanda.pack(side="left", padx=5)
+
+        # Botão cancelar (continua apenas fechando a janela)
+        botao_voltar = ctk.CTkButton(
+            frame_botoes, text="Cancelar", command=janela_demanda.destroy
+        )
+        botao_voltar.pack(side="left", padx=5)
 
 
 if __name__ == "__main__":
