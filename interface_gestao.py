@@ -89,51 +89,51 @@ class DashboardOng(ctk.CTk):
         )  # Pack aqui é ok porque é só um texto empilhado no outro dentro do card
 
         # Número Gigante
-        valor_livres = ctk.CTkLabel(
+        self.label_valor_livres = ctk.CTkLabel(
             self.card_livres,
             text="12",
             font=("Arial", 32, "bold"),
             text_color="#2ecc71",
         )  # Verde
-        valor_livres.pack(pady=(0, 15))
+        self.label_valor_livres.pack(pady=(0, 15))
 
         # --- CARD 2: EM ROTA ---
-        self.card_livres = ctk.CTkFrame(self.frame_cards, corner_radius=8)
-        self.card_livres.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        self.valor_em_rota = ctk.CTkFrame(self.frame_cards, corner_radius=8)
+        self.valor_em_rota.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         # Título do card
         titulo_livres = ctk.CTkLabel(
-            self.card_livres, text="EM ROTA", font=("Arial", 12)
+            self.valor_em_rota, text="EM ROTA", font=("Arial", 12)
         )
         titulo_livres.pack(pady=(15, 5))
 
         # Número Gigante
-        valor_livres = ctk.CTkLabel(
-            self.card_livres,
+        self.label_valor_em_rota = ctk.CTkLabel(
+            self.valor_em_rota,
             text="12",
             font=("Arial", 32, "bold"),
             text_color="#284eee",
         )
-        valor_livres.pack(pady=(0, 15))
+        self.label_valor_em_rota.pack(pady=(0, 15))
 
         # CARD 3: DEMANDAS PENDENTES ---
-        self.card_livres = ctk.CTkFrame(self.frame_cards, corner_radius=8)
-        self.card_livres.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
+        self.valor_pendente = ctk.CTkFrame(self.frame_cards, corner_radius=8)
+        self.valor_pendente.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
         # Título do card
         titulo_livres = ctk.CTkLabel(
-            self.card_livres, text="DEMANDAS PENDENTES", font=("Arial", 12)
+            self.valor_pendente, text="DEMANDAS PENDENTES", font=("Arial", 12)
         )
         titulo_livres.pack(pady=(15, 5))
 
         # Número Gigante
-        valor_livres = ctk.CTkLabel(
-            self.card_livres,
+        self.label_valor_pendentes = ctk.CTkLabel(
+            self.valor_pendente,
             text="12",
             font=("Arial", 32, "bold"),
             text_color="#ffc637",
         )
-        valor_livres.pack(pady=(0, 15))
+        self.label_valor_pendentes.pack(pady=(0, 15))
 
         # 1. Cria o Frame principal da tabela (uso cor de fundo para ficar igual ao Figma)
         self.frame_tabela = ctk.CTkFrame(self.frame_principal, corner_radius=10)
@@ -188,6 +188,7 @@ class DashboardOng(ctk.CTk):
         )
         cabecalho_status.grid(row=1, column=3, padx=15, pady=5, sticky="w")
         self.atualizar_tabela_demandas()
+        self.atualizar_cards_resumo()
 
     def atualizar_tabela_demandas(self):
         # 1. Limpa os dados antigos da tabela, exceto os cabeçalhos que estão nas linhas 0 e 1
@@ -202,17 +203,18 @@ class DashboardOng(ctk.CTk):
 
         # 3. Cria uma linha na tela para cada demanda encontrada no banco
         for index, demanda in enumerate(demandas):
-            linha_atual = (
-                index + 2
-            )  # A primeira demanda fica na row=2, a segunda na row=3, etc.
+            linha_atual = index + 2
 
-            # demanda[0] é a data. Vou cortar só a hora (ex: de "2026-10-13 14:30:00.123" para "14:30")
-            horario = demanda[0].split(" ")[1][:5] if " " in demanda[0] else demanda[0]
-            tipo = demanda[1]
-            origem = demanda[2]
-            status = demanda[3]
+            # Os índices mudaram porque agora o demanda[0] é a Chave Primária (id_demanda)
+            id_dem = demanda[0]
+            data_crua = demanda[1]
+            tipo = demanda[2]
+            origem = demanda[3]
+            status = demanda[4]
 
-            # Desenha as 4 colunas desta linha
+            horario = data_crua.split(" ")[1][:5] if " " in data_crua else data_crua
+
+            # Desenha as 3 primeiras colunas normalmente
             ctk.CTkLabel(
                 self.frame_tabela, text=f"HORÁRIO: {horario}", font=("Arial", 12)
             ).grid(row=linha_atual, column=0, padx=15, pady=10, sticky="w")
@@ -222,9 +224,45 @@ class DashboardOng(ctk.CTk):
             ctk.CTkLabel(
                 self.frame_tabela, text=f"ORIGEM: {origem}", font=("Arial", 12)
             ).grid(row=linha_atual, column=2, padx=15, pady=10, sticky="w")
+
+            # miniframe invisível só para deixar o texto e o botão lado a lado
+            frame_status = ctk.CTkFrame(self.frame_tabela, fg_color="transparent")
+            frame_status.grid(row=linha_atual, column=3, padx=15, pady=10, sticky="w")
+
             ctk.CTkLabel(
-                self.frame_tabela, text=f"STATUS: {status}", font=("Arial", 12)
-            ).grid(row=linha_atual, column=3, padx=15, pady=10, sticky="w")
+                frame_status, text=f"STATUS: {status}", font=("Arial", 12)
+            ).pack(side="left")
+
+            # Se a demanda estiver pendente, cria um botão verde de 'Concluir'
+            if status == "Pendente":
+                # O comando lambda garante que o botão saiba exatamente qual é o ID daquela linha
+                botao_concluir = ctk.CTkButton(
+                    frame_status,
+                    text="✔",
+                    width=30,
+                    height=24,
+                    fg_color="#2ecc71",
+                    hover_color="#27ae60",
+                    command=lambda d=id_dem: self.concluir_demanda(d),
+                )
+                botao_concluir.pack(side="left", padx=10)
+
+    def atualizar_cards_resumo(self):
+        # 1. Vai buscar os três números ao banco de dados
+        livres, em_rota, pendentes = self.sistema.obter_resumo_dashboard()
+
+        # 2. Atualiza os textos na tela convertendo os números (int) para texto (str)
+        self.label_valor_livres.configure(text=str(livres))
+        self.label_valor_em_rota.configure(text=str(em_rota))
+        self.label_valor_pendentes.configure(text=str(pendentes))
+
+    def concluir_demanda(self, id_demanda):
+        # 1. Avisa o banco para mudar o status para 'Concluído'
+        self.sistema.atualizar_status_demanda(id_demanda, "Concluído")
+
+        # 2. Atualiza a tabela para o utilizador ver a mudança na hora!
+        self.atualizar_tabela_demandas()
+        self.atualizar_cards_resumo()
 
     def abrir_tela_nova_demanda(self):
         # 1. Cria a janela flutuante
@@ -275,6 +313,7 @@ class DashboardOng(ctk.CTk):
             # 2. Chama a função da classe ControleFrota
             self.sistema.cadastrar_demanda(tipo_demanda=tipo, origem=orig, destino=dest)
             self.atualizar_tabela_demandas()
+            self.atualizar_cards_resumo()
 
             # 3. Fecha a janela flutuante
             janela_demanda.destroy()

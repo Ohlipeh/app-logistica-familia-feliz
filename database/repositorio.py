@@ -41,9 +41,9 @@ class ControleFrota:
         cursor = conexao.cursor()
 
         # O SELECT busca os campos na ordem que exibir.
-        # ORDER BY id_demanda DESC faz aparecer as mais novas primeiro.
+        # Adicionamos o id_demanda logo no início
         cursor.execute("""
-            SELECT data_horario_previsto, tipo_demanda, origem, status 
+            SELECT id_demanda, data_horario_previsto, tipo_demanda, origem, status 
             FROM demandas 
             ORDER BY id_demanda DESC LIMIT 5
         """)
@@ -52,6 +52,40 @@ class ControleFrota:
         conexao.close()
 
         return resultados
+
+    def atualizar_status_demanda(self, id_demanda, novo_status):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            "UPDATE demandas SET status = ? WHERE id_demanda = ?",
+            (novo_status, id_demanda),
+        )
+
+        conexao.commit()
+        conexao.close()
+
+    def obter_resumo_dashboard(self):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # Conta veículos livres
+        cursor.execute("SELECT COUNT(*) FROM veiculos WHERE status = 'Livre'")
+        livres = cursor.fetchone()[
+            0
+        ]  # fetchone()[0] pega exatamente o número da resposta
+
+        # Conta veículos em rota
+        cursor.execute("SELECT COUNT(*) FROM veiculos WHERE status = 'Em Rota'")
+        em_rota = cursor.fetchone()[0]
+
+        # Conta demandas pendentes
+        cursor.execute("SELECT COUNT(*) FROM demandas WHERE status = 'Pendente'")
+        pendentes = cursor.fetchone()[0]
+
+        conexao.close()
+
+        return livres, em_rota, pendentes
 
     def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
         data = datetime.now()
