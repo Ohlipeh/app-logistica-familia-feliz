@@ -1,5 +1,9 @@
 from datetime import datetime
 import sqlite3
+import os
+
+# Importa o caminho do banco e a função de criar tabelas do seu ficheiro conexao.py
+from database.conexao import criar_banco_dados, CAMINHO_BANCO
 
 
 class Veiculo:
@@ -15,8 +19,13 @@ class Veiculo:
 
 # Classe para manipular o BD.
 class ControleFrota:
-    def __init__(self, db_nome="sistema_ong.db"):
-        self.db_nome = db_nome
+    def __init__(self):
+        # 1. Usa o caminho exato que foi definido no conexao.py
+        self.db_nome = CAMINHO_BANCO
+
+        # 2. Chama a sua função de criar tabelas sempre que o sistema arrancar!
+        # Assim, se o banco ou as tabelas não existirem, ele cria automaticamente.
+        criar_banco_dados()
 
     def cadastrar_demanda(self, tipo_demanda, origem, destino):
         # Captura a data/hora atual para usar como previsão inicial
@@ -48,7 +57,8 @@ class ControleFrota:
             ORDER BY id_demanda DESC LIMIT 5
         """)
 
-        resultados = cursor.fetchall()  # Captura todas as linhas encontradas
+        # Captura todas as linhas encontradas
+        resultados = cursor.fetchall()
         conexao.close()
 
         return resultados
@@ -57,6 +67,7 @@ class ControleFrota:
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
 
+        # UPDATE pra atualizar demanda
         cursor.execute(
             "UPDATE demandas SET status = ? WHERE id_demanda = ?",
             (novo_status, id_demanda),
@@ -86,6 +97,31 @@ class ControleFrota:
         conexao.close()
 
         return livres, em_rota, pendentes
+
+    def cadastrar_veiculo(self, placa, modelo, km_atual):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # Insere valores na tabela veiculos
+        cursor.execute(
+            "INSERT INTO veiculos (placa, modelo, km_atual, status) VALUES (?, ?, ?, ?)",
+            (placa, modelo, km_atual, "Livre"),
+        )
+        conexao.commit()
+        conexao.close()
+
+        print("Cadastro realizado com sucesso!")
+
+    def buscar_veiculos(self):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # Busca todas as informações dos veículos
+        cursor.execute("SELECT placa, modelo, km_atual, status FROM veiculos")
+        resultados = cursor.fetchall()
+
+        conexao.close()
+        return resultados
 
     def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
         data = datetime.now()

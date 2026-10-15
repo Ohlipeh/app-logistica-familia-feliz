@@ -1,9 +1,15 @@
 import sqlite3
+import os
+
+# 1. Descobre a pasta atual (onde está o conexao.py)
+PASTA_ATUAL = os.path.dirname(os.path.abspath(__file__))
+# 2. Cria o caminho absoluto para o banco (vai ficar dentro da pasta database)
+CAMINHO_BANCO = os.path.join(PASTA_ATUAL, "sistema_ong.db")
 
 
 def criar_banco_dados():
-    # Criando o arquivo do banco local
-    conexao = sqlite3.connect("sistema_ong.db")
+    # Usando a variável com o caminho absoluto em vez de apenas o nome
+    conexao = sqlite3.connect(CAMINHO_BANCO)
     cursor = conexao.cursor()
 
     # 1. Criando tabela Motorista
