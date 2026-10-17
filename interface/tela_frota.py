@@ -74,10 +74,11 @@ class TelaFrota(ctk.CTkFrame):
         for index, veiculo in enumerate(veiculos):
             linha = index + 1  # Começa na row=1
 
-            placa = veiculo[0]
-            modelo = veiculo[1]
-            km = veiculo[2]
-            status = veiculo[3]
+            id_veic = veiculo[0]
+            placa = veiculo[1]
+            modelo = veiculo[2]
+            km = veiculo[3]
+            status = veiculo[4]
 
             # Define a cor do status (Verde para Livre, Azul para Em Rota)
             cor_status = "#2ecc71" if status == "Livre" else "#284eee"
@@ -97,6 +98,30 @@ class TelaFrota(ctk.CTkFrame):
                 font=("Arial", 12, "bold"),
                 text_color=cor_status,
             ).grid(row=linha, column=3, padx=15, pady=10, sticky="w")
+
+            # Mudança coluna de Status
+            frame_status = ctk.CTkFrame(self.frame_tabela_frota, fg_color="transparent")
+            frame_status.grid(row=linha, column=3, padx=15, pady=10, sticky="w")
+
+            # 1. Coloco o texto do status dentro do miniframe
+            ctk.CTkLabel(
+                frame_status,
+                text=status,
+                font=("Arial", 12, "bold"),
+                text_color=cor_status,
+            ).pack(side="left")
+
+            # 2. Cria o botão vermelho dentro do miniframe
+            botao_excluir = ctk.CTkButton(
+                frame_status,
+                text="Excluir",
+                width=45,
+                height=20,
+                fg_color="#e74c3c",
+                hover_color="#c0392b",
+                command=lambda v=id_veic: self.deletar_veiculo(v),
+            )
+            botao_excluir.pack(side="left", padx=10)
 
     def abrir_tela_novo_veiculo(self):
         janela_veiculo = ctk.CTkToplevel(self)
@@ -153,3 +178,10 @@ class TelaFrota(ctk.CTkFrame):
             frame_botoes, text="Cancelar", command=janela_veiculo.destroy
         )
         botao_voltar.pack(side="left", padx=5)
+
+    def deletar_veiculo(self, id_veiculo):
+        # 1. Pede ao banco para apagar
+        self.sistema.excluir_veiculo(id_veiculo)
+
+        # 2. Atualiza a tabela e os números do Veiculos
+        self.atualizar_tabela_veiculos()

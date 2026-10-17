@@ -17,7 +17,7 @@ class Veiculo:
         print(f"Placa: {self.placa} - Modelo: {self.modelo} - Km: {self.km_atual}")
 
 
-# Classe para manipular o BD.
+# --- Classe para manipular o BD. ---
 class ControleFrota:
     def __init__(self):
         # 1. Usa o caminho exato que foi definido no conexao.py
@@ -27,6 +27,7 @@ class ControleFrota:
         # Assim, se o banco ou as tabelas não existirem, ele cria automaticamente.
         criar_banco_dados()
 
+    # --- Função para cadastrar a demanda ---
     def cadastrar_demanda(self, tipo_demanda, origem, destino):
         # Captura a data/hora atual para usar como previsão inicial
         data_prevista = datetime.now()
@@ -45,6 +46,7 @@ class ControleFrota:
         conexao.close()
         print(f"Demanda de {tipo_demanda} para {destino} cadastrada no banco!")
 
+    # --- Função para buscar a demanda ---
     def buscar_demandas_recentes(self):
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
@@ -63,6 +65,7 @@ class ControleFrota:
 
         return resultados
 
+    # --- Função para atualizar o status da demanda ---
     def atualizar_status_demanda(self, id_demanda, novo_status):
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
@@ -76,6 +79,19 @@ class ControleFrota:
         conexao.commit()
         conexao.close()
 
+    # --- Função para excluir demanda ---
+    def excluir_demanda(self, id_demanda):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # Comando DELETE remove a linha específica usando a Chave Primária
+        cursor.execute("DELETE FROM demandas WHERE id_demanda = ?", (id_demanda,))
+
+        conexao.commit()
+        conexao.close()
+        print(f"Demanda ID {id_demanda} excluída com sucesso.")
+
+    # --- Função para obter resumo de Deshboard ---
     def obter_resumo_dashboard(self):
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
@@ -98,6 +114,7 @@ class ControleFrota:
 
         return livres, em_rota, pendentes
 
+    # --- Função para cadastrar o veiculo ---
     def cadastrar_veiculo(self, placa, modelo, km_atual):
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
@@ -112,17 +129,33 @@ class ControleFrota:
 
         print("Cadastro realizado com sucesso!")
 
+    # --- Função para excluir o veiculo ---
+    def excluir_veiculo(self, id_veiculo):
+        conexao = sqlite3.connect(self.db_nome)
+        cursor = conexao.cursor()
+
+        # Comando DELETE remove a linha específica usando a Chave Primária
+        cursor.execute("DELETE FROM veiculos WHERE id_veiculo = ?", (id_veiculo,))
+
+        conexao.commit()
+        conexao.close()
+        print(f"Veiculo ID {id_veiculo} excluído com sucesso.")
+
+    # --- Função para buscar veiculo ---
     def buscar_veiculos(self):
         conexao = sqlite3.connect(self.db_nome)
         cursor = conexao.cursor()
 
         # Busca todas as informações dos veículos
-        cursor.execute("SELECT placa, modelo, km_atual, status FROM veiculos")
+        cursor.execute(
+            "SELECT id_veiculo, placa, modelo, km_atual, status FROM veiculos"
+        )
         resultados = cursor.fetchall()
 
         conexao.close()
         return resultados
 
+    # --- Função para realizar Check-in ---
     def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
         data = datetime.now()
 
@@ -140,6 +173,7 @@ class ControleFrota:
 
         print(f"Check-in realizado para o veículo ID {id_veiculo}.")
 
+    # --- Função para realizar Checkout ---
     def realizar_checkout(self, id_veiculo, km_final):
         data = datetime.now()
 

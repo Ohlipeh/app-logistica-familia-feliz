@@ -214,11 +214,31 @@ class TelaDashboard(ctk.CTkFrame):
                 )
                 botao_concluir.pack(side="left", padx=10)
 
+            # Botão Vermelho de excluir
+            botao_excluir = ctk.CTkButton(
+                frame_status,
+                text="Excluir",
+                width=45,
+                height=20,
+                fg_color="#e74c3c",
+                hover_color="#c0392b",
+                command=lambda d=id_dem: self.deletar_demanda(d),
+            )
+            botao_excluir.pack(side="left", padx=5)
+
     def concluir_demanda(self, id_demanda):
         # 1. Avisa o banco para mudar o status para 'Concluído'
         self.sistema.atualizar_status_demanda(id_demanda, "Concluído")
 
         # 2. Atualiza a tabela para o utilizador ver a mudança na hora!
+        self.atualizar_tabela_demandas()
+        self.atualizar_cards_resumo()
+
+    def deletar_demanda(self, id_demanda):
+        # 1. Pede ao banco para apagar
+        self.sistema.excluir_demanda(id_demanda)
+
+        # 2. Atualiza a tabela e os números do Dashboard
         self.atualizar_tabela_demandas()
         self.atualizar_cards_resumo()
 
