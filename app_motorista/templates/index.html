@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Esta tag abaixo é o segredo para o site se adaptar à tela do celular -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Motorista - Família Feliz</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+      }
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+      p {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-bottom: 25px;
+      }
+
+      .btn-checkin {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 15px;
+      }
+      .btn-checkin:hover {
+        background-color: #27ae60;
+      }
+
+      .btn-checkout {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .btn-checkout:hover {
+        background-color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Família Feliz</h2>
+      <p>Portal de Operações Logísticas</p>
+
+      <a href="/checkin" style="text-decoration: none">
+        <button class="btn-checkin">Fazer Check-in (Saída)</button>
+      </a>
+      <a href="/checkout" style="text-decoration: none">
+        <button class="btn-checkout">Fazer Check-out (Retorno)</button>
+      </a>
+    </div>
+  </body>
+</html>

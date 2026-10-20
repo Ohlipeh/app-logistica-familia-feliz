@@ -1,0 +1,7 @@
+# Ignorar arquivos de acesso e credenciais do Google
+database/credentials.json
+database/token.json
+
+# Ignorar pastas automáticas do Python
+__pycache__/
+*.pyc

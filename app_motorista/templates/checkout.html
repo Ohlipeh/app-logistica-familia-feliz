@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Check-out - Família Feliz</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f7f6;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+      }
+      input,
+      select {
+        width: 90%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      .btn-confirmar {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .btn-voltar {
+        display: block;
+        margin-top: 15px;
+        color: #7f8c8d;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Registrar Retorno</h2>
+      <p>Informe os dados de devolução do veículo</p>
+
+      <form method="POST">
+        <select name="id_veiculo" required>
+          <option value="">Selecione o Veículo</option>
+          {% for v in veiculos %}
+          <option value="{{ v[0] }}">{{ v[1] }} - {{ v[2] }}</option>
+          {% endfor %}
+        </select>
+
+        <input
+          type="number"
+          name="km_final"
+          placeholder="Quilometragem Final"
+          required
+        />
+
+        <!-- NOVA CAIXA DE OBSERVAÇÕES -->
+        <textarea
+          name="observacoes"
+          placeholder="Observações do veículo (Ex: Pneu baixo, tanque na reserva...)"
+          rows="3"
+          style="
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            resize: none;
+            font-family: &quot;Arial&quot;, sans-serif;
+          "
+        ></textarea>
+
+        <button type="submit" class="btn-confirmar">Confirmar Check-out</button>
+      </form>
+
+      <a href="/" class="btn-voltar">Voltar ao Início</a>
+    </div>
+  </body>
+</html>
