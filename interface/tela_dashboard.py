@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from datetime import datetime
 
 
 class TelaDashboard(ctk.CTkFrame):
@@ -172,25 +173,31 @@ class TelaDashboard(ctk.CTkFrame):
         for index, demanda in enumerate(demandas):
             linha_atual = index + 2
 
+            # Trava de segurança
+            demanda = list(demanda)
+            while len(demanda) < 8:
+                demanda.append("")
+
             # Os índices mudaram porque agora o demanda[0] é a Chave Primária (id_demanda)
             id_dem = demanda[0]
-            data_crua = demanda[1]
-            tipo = demanda[2]
-            origem = demanda[3]
-            status = demanda[4]
+            data_completa = demanda[1]
+            descricao = demanda[2]
+            pessoa = demanda[3]
+            origem = demanda[4]
 
-            horario = data_crua.split(" ")[1][:5] if " " in data_crua else data_crua
+            # Puxa o status, mas se vier vazio assume que é Pendente.
+            status = demanda[7] if demanda[7].strip() != "" else "Pendente"
 
-            # Desenha as 3 primeiras colunas normalmente
+            # Desenha as colunas normalmente
             ctk.CTkLabel(
-                self.frame_tabela, text=f"HORÁRIO: {horario}", font=("Arial", 12)
+                self.frame_tabela, text=f"{data_completa}", font=("Arial", 12)
             ).grid(row=linha_atual, column=0, padx=15, pady=10, sticky="w")
             ctk.CTkLabel(
-                self.frame_tabela, text=f"TIPO: {tipo}", font=("Arial", 12)
+                self.frame_tabela, text=f"{descricao}\n({pessoa})", font=("Arial", 12)
             ).grid(row=linha_atual, column=1, padx=15, pady=10, sticky="w")
-            ctk.CTkLabel(
-                self.frame_tabela, text=f"ORIGEM: {origem}", font=("Arial", 12)
-            ).grid(row=linha_atual, column=2, padx=15, pady=10, sticky="w")
+            ctk.CTkLabel(self.frame_tabela, text=f"{origem}", font=("Arial", 12)).grid(
+                row=linha_atual, column=2, padx=15, pady=10, sticky="w"
+            )
 
             # miniframe invisível só para deixar o texto e o botão lado a lado
             frame_status = ctk.CTkFrame(self.frame_tabela, fg_color="transparent")
@@ -246,7 +253,7 @@ class TelaDashboard(ctk.CTkFrame):
         # 1. Cria a janela flutuante
         janela_demanda = ctk.CTkToplevel(self)
         janela_demanda.title("Cadastrar Nova Demanda")
-        janela_demanda.geometry("600x400")
+        janela_demanda.geometry("600x550")
 
         # Faz com que a janela principal fique bloqueada enquanto esta estiver aberta (opcional, mas recomendado)
         janela_demanda.grab_set()
@@ -255,19 +262,28 @@ class TelaDashboard(ctk.CTkFrame):
         titulo = ctk.CTkLabel(
             janela_demanda, text="CADASTRAR NOVA DEMANDA", font=("Arial", 16, "bold")
         )
-        titulo.pack(pady=20)
+        titulo.pack(pady=15)
 
         # 3. Campo Tipo de Demanda
-        entrada_demanda = ctk.CTkComboBox(
+        entrada_descricao = ctk.CTkEntry(
             janela_demanda,
-            values=["Coleta de Doação", "Cesta Básica", "Transporte Médico"],
+            placeholder_text="Descrição (Ex: Levar ao médico, Coletar Doação...)",
             width=400,
         )
-        entrada_demanda.pack(pady=10)
+        entrada_descricao.pack(pady=10)
+
+        entrada_pessoa = ctk.CTkEntry(
+            janela_demanda,
+            placeholder_text="Nome da Pessoa ou Instituição",
+            width=400,
+        )
+        entrada_pessoa.pack(pady=10)
 
         # 4. Campo Endereço de Origem
         entrada_origem = ctk.CTkEntry(
-            janela_demanda, placeholder_text="Endereço de Origem", width=400
+            janela_demanda,
+            placeholder_text="Endereço de Origem (Rua, Bairro)",
+            width=400,
         )
         entrada_origem.pack(pady=10)
 
@@ -277,26 +293,56 @@ class TelaDashboard(ctk.CTkFrame):
         )
         entrada_destino.pack(pady=10)
 
+        # 5. Seleção de veiculo (Busca apenas os livres)
+        todos_veiculos = self.sistema.buscar_veiculos()
+        veiculos_livres = [
+            f"{v[0]} - {v[1]}" for v in todos_veiculos if v[4] == "Livre"
+        ]
+
+        if not veiculos_livres:
+            veiculos_livres = ["Nenhum veiculo livre disponível"]
+
+        entrada_veiculo = ctk.CTkComboBox(
+            janela_demanda, values=veiculos_livres, width=400
+        )
+        entrada_veiculo.pack(pady=10)
+
         # Frame para os botões
         frame_botoes = ctk.CTkFrame(janela_demanda, fg_color="transparent")
-        frame_botoes.pack(pady=10)
+        frame_botoes.pack(pady=20)
 
         # --- A FUNÇÃO QUE SALVA OS DADOS ---
         def salvar_no_banco():
-            # 1. Pega os valores que estão escritos nas caixinhas
-            tipo = entrada_demanda.get()
-            orig = entrada_origem.get()
-            dest = entrada_destino.get()
+            # 1. Recolhe todos os dados
+            data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
+            descricao = entrada_descricao.get()
+            pessoa = entrada_pessoa.get()
+            origem = entrada_origem.get()
+            destino = entrada_destino.get()
+            veiculo_selecionado = entrada_veiculo.get()
 
-            # 2. Chama a função da classe ControleFrota
-            self.sistema.cadastrar_demanda(tipo_demanda=tipo, origem=orig, destino=dest)
+            # Extrai apenas o ID do veiculo
+            id_veiculo = (
+                veiculo_selecionado.split(" - ")[0]
+                if " - " in veiculo_selecionado
+                else ""
+            )
+
+            # Chama a função atualizada
+            self.sistema.cadastrar_demanda(
+                data_horario=data_hora,
+                descricao=descricao,
+                pessoa=pessoa,
+                origem=origem,
+                destino=destino,
+                veiculo=id_veiculo,
+            )
+
             self.atualizar_tabela_demandas()
             self.atualizar_cards_resumo()
-
             # 3. Fecha a janela flutuante
             janela_demanda.destroy()
 
-        # --- BOTÕES ATUALIZADOS ---
         # Botão cadastrar (agora aponta para a função salvar_no_banco)
         botao_cadastrar_demanda = ctk.CTkButton(
             frame_botoes, text="Cadastrar Demanda", command=salvar_no_banco

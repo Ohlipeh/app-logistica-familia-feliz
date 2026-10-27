@@ -41,22 +41,42 @@ class ControleFrota:
         print("Conectado ao Google Sheets com sucesso!")
 
     # --- Função para cadastrar a demanda ---
-    def cadastrar_demanda(self, tipo_demanda, origem, destino):
-        # O Sheets prefere as datas formatadas em texto simples
-        data_prevista = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        # Pega todas as linhas para descobrir qual é o último ID
-        registros = self.aba_demandas.get_all_values()
+    def _gerar_novo_id(self, aba):
+        # Busca todas as linhas da planilha
+        registros = aba.get_all_values()
 
-        # Se a planilha só tiver o cabeçalho (linha 1), o id é 1. Senão, é o último id + 1.
-        novo_id = int(registros[-1][0]) + 1 if len(registros) > 1 else 1
+        # Se a planilha só tiver o cabeçalho (1 linha), o primeiro ID será 1
+        if len(registros) <= 1:
+            return 1
 
-        # Adiciona uma nova linha no final da aba Demandas
-        # Colunas: id_demanda, data, tipo_demanda, origem, destino, status
-        self.aba_demandas.append_row(
-            [novo_id, data_prevista, tipo_demanda, origem, destino, "Pendente"]
-        )
-        print(f"Demanda de {tipo_demanda} para {destino} salva no Sheets!")
+        # Vai à última linha preenchida, pega o número da coluna A (índice 0) e soma 1
+        try:
+            ultimo_id = int(registros[-1][0])
+            return ultimo_id + 1
+        except ValueError:
+            # Proteção caso a célula esteja vazia ou com texto
+            return len(registros)
+
+    def cadastrar_demanda(
+        self, data_horario, descricao, pessoa, origem, destino, veiculo
+    ):
+        novo_id = self._gerar_novo_id(self.aba_demandas)
+        # Segue exatamente a nova ordem das colunas (A até H)
+        # O status entra automaticamente como "Pendente" na coluna H
+        nova_linha = [
+            novo_id,
+            data_horario,
+            descricao,
+            pessoa,
+            origem,
+            destino,
+            veiculo,
+            "Pendente",
+        ]
+
+        self.aba_demandas.append_row(nova_linha)
+        print(f"Demanda {novo_id} adicionada com sucesso para {pessoa}.")
 
     # --- Função para buscar a demanda ---
     def buscar_demandas_recentes(self):

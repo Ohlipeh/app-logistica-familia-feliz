@@ -21,29 +21,29 @@ def index():
 # 2. Rota de Check-in (Lida com o formulário)
 @app.route("/checkin", methods=["GET", "POST"])
 def checkin():
-    # Se o utilizador clicou no botão "Confirmar" (POST)
     if request.method == "POST":
         motorista = request.form.get("id_motorista")
+        # O select agora envia o ID do veículo que já estava amarrado à demanda
         veiculo = request.form.get("id_veiculo")
         km = request.form.get("km_inicial")
 
-        # Envia para a planilha do Google Drive
         sistema.realizar_checkin(motorista, veiculo, km)
-
-        # Volta para a página inicial
         return redirect(url_for("index"))
 
-    # Se ele apenas abriu a página (GET), vai buscar os carros livres
-    todos_veiculos = sistema.buscar_veiculos()
+    # Busca as demandas recentes em vez dos veículos soltos
+    todas_demandas = sistema.buscar_demandas_recentes()
+    demandas_pendentes = []
 
-    # Filtra apenas os veículos que estão com status "Livre" (índice 4)
-    veiculos_livres = []
-    for v in todos_veiculos:
-        if v[4] == "Livre":
-            veiculos_livres.append(v)
+    for d in todas_demandas:
+        linha = list(d)
+        # Trava de segurança para garantir 8 colunas
+        while len(linha) < 8:
+            linha.append("")
 
-    # Manda a lista de carros livres para o HTML montar a caixa de seleção
-    return render_template("checkin.html", veiculos=veiculos_livres)
+        if linha[7] == "Pendente":
+            demandas_pendentes.append(linha)
+
+    return render_template("checkin.html", demandas=demandas_pendentes)
 
 
 # 3. Rota de Check-out (Devolução do veículo)
