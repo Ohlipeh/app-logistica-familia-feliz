@@ -59,11 +59,12 @@ class ControleFrota:
             return len(registros)
 
     def cadastrar_demanda(
-        self, data_horario, descricao, pessoa, origem, destino, veiculo
+        self, data_horario, descricao, pessoa, origem, destino, veiculo, acolhido
     ):
         novo_id = self._gerar_novo_id(self.aba_demandas)
-        # Segue exatamente a nova ordem das colunas (A até H)
-        # O status entra automaticamente como "Pendente" na coluna H
+        status = "Pendente"
+        # Segue exatamente a nova ordem das colunas (A até I)
+        # O status entra automaticamente como "Pendente" na coluna I
         nova_linha = [
             novo_id,
             data_horario,
@@ -72,11 +73,27 @@ class ControleFrota:
             origem,
             destino,
             veiculo,
-            "Pendente",
+            status,
+            acolhido,
         ]
 
         self.aba_demandas.append_row(nova_linha)
         print(f"Demanda {novo_id} adicionada com sucesso para {pessoa}.")
+
+    def buscar_locais_historico(self):
+        # Lê todas as demandas e extrai Origem (coluna 4) e Destino (coluna 5) sem repetir
+        try:
+            registros = self.aba_demandas.get_all_values()[1:]  # Pula o cabeçalho
+            locais = set()
+            for linha in registros:
+                if len(linha) >= 6:
+                    if linha[4].strip():
+                        locais.add(linha[4].strip())
+                    if linha[5].strip():
+                        locais.add(linha[5].strip())
+            return sorted(list(locais))
+        except Exception:
+            return []
 
     # --- Função para buscar a demanda ---
     def buscar_demandas_recentes(self):

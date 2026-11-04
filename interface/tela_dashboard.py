@@ -8,6 +8,11 @@ class TelaDashboard(ctk.CTkFrame):
         self.sistema = sistema
         self.grid_columnconfigure(0, weight=1)
 
+        # 1. Busca o histórico (agora com self. para ser acessível na outra janela)
+        self.locais_conhecidos = self.sistema.buscar_locais_historico()
+        if not self.locais_conhecidos:
+            self.locais_conhecidos = ["Nenhum local salvo ainda"]
+
         self.desenhar_tela()
 
     def desenhar_tela(self):
@@ -279,18 +284,30 @@ class TelaDashboard(ctk.CTkFrame):
         )
         entrada_pessoa.pack(pady=10)
 
-        # 4. Campo Endereço de Origem
-        entrada_origem = ctk.CTkEntry(
+        # NOVO: Campo do Acolhido
+        entrada_acolhido = ctk.CTkEntry(
             janela_demanda,
-            placeholder_text="Endereço de Origem (Rua, Bairro)",
+            placeholder_text="Nome do Acolhido (Ex: Zé Luiz, Ana Maria)",
             width=400,
         )
+        entrada_acolhido.pack(pady=10)
+
+        # 4. Campo Endereço de Origem (Agora como ComboBox)
+        entrada_origem = ctk.CTkComboBox(
+            janela_demanda,
+            values=self.locais_conhecidos,
+            width=400,
+        )
+        entrada_origem.set(
+            "Endereço de Origem (Rua, Bairro)"
+        )  # Texto que aparece vazio
         entrada_origem.pack(pady=10)
 
-        # Campo Endereço de Destino
-        entrada_destino = ctk.CTkEntry(
-            janela_demanda, placeholder_text="Endereço de Destino", width=400
+        # Campo Endereço de Destino (Agora como ComboBox)
+        entrada_destino = ctk.CTkComboBox(
+            janela_demanda, values=self.locais_conhecidos, width=400
         )
+        entrada_destino.set("Endereço de Destino")
         entrada_destino.pack(pady=10)
 
         # 5. Seleção de veiculo (Busca apenas os livres)
@@ -317,6 +334,7 @@ class TelaDashboard(ctk.CTkFrame):
             data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
             descricao = entrada_descricao.get()
             pessoa = entrada_pessoa.get()
+            acolhido = entrada_acolhido.get()  # Pega o nome do paciente
             origem = entrada_origem.get()
             destino = entrada_destino.get()
             veiculo_selecionado = entrada_veiculo.get()
@@ -328,7 +346,7 @@ class TelaDashboard(ctk.CTkFrame):
                 else ""
             )
 
-            # Chama a função atualizada
+            # Chama a função atualizada (agora com 7 parâmetros)
             self.sistema.cadastrar_demanda(
                 data_horario=data_hora,
                 descricao=descricao,
@@ -336,6 +354,41 @@ class TelaDashboard(ctk.CTkFrame):
                 origem=origem,
                 destino=destino,
                 veiculo=id_veiculo,
+                acolhido=acolhido,
+            )
+
+            self.atualizar_tabela_demandas()
+            self.atualizar_cards_resumo()
+            # 3. Fecha a janela flutuante
+            janela_demanda.destroy()
+
+        # --- A FUNÇÃO QUE SALVA OS DADOS ---
+        def salvar_no_banco():
+            # 1. Recolhe todos os dados
+            data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
+            descricao = entrada_descricao.get()
+            pessoa = entrada_pessoa.get()
+            acolhido = entrada_acolhido.get()  # Pega o nome do paciente
+            origem = entrada_origem.get()
+            destino = entrada_destino.get()
+            veiculo_selecionado = entrada_veiculo.get()
+
+            # Extrai apenas o ID do veiculo
+            id_veiculo = (
+                veiculo_selecionado.split(" - ")[0]
+                if " - " in veiculo_selecionado
+                else ""
+            )
+
+            # Chama a função atualizada (agora com 7 parâmetros)
+            self.sistema.cadastrar_demanda(
+                data_horario=data_hora,
+                descricao=descricao,
+                pessoa=pessoa,
+                origem=origem,
+                destino=destino,
+                veiculo=id_veiculo,
+                acolhido=acolhido,
             )
 
             self.atualizar_tabela_demandas()
