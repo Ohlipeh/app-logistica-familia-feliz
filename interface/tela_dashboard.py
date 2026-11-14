@@ -175,31 +175,38 @@ class TelaDashboard(ctk.CTkFrame):
         demandas = self.sistema.buscar_demandas_recentes()
 
         # 3. Cria uma linha na tela para cada demanda encontrada no banco
+
         for index, demanda in enumerate(demandas):
             linha_atual = index + 2
 
-            # Trava de segurança
+            # Trava de segurança para garantir 9 colunas agora (até o Acolhido na I)
             demanda = list(demanda)
-            while len(demanda) < 8:
+            while len(demanda) < 9:
                 demanda.append("")
 
-            # Os índices mudaram porque agora o demanda[0] é a Chave Primária (id_demanda)
+            # IDs e extração correta baseada no Google Sheets
             id_dem = demanda[0]
             data_completa = demanda[1]
             descricao = demanda[2]
             pessoa = demanda[3]
             origem = demanda[4]
-
-            # Puxa o status, mas se vier vazio assume que é Pendente.
             status = demanda[7] if demanda[7].strip() != "" else "Pendente"
+            acolhido = demanda[8]
+
+            # Monta o texto combinando Tipo, Pessoa e Acolhido
+            texto_tipo = f"{descricao}\n(Resp: {pessoa})"
+            if acolhido.strip():
+                texto_tipo += f"\n[Acolhido: {acolhido}]"
 
             # Desenha as colunas normalmente
             ctk.CTkLabel(
                 self.frame_tabela, text=f"{data_completa}", font=("Arial", 12)
             ).grid(row=linha_atual, column=0, padx=15, pady=10, sticky="w")
-            ctk.CTkLabel(
-                self.frame_tabela, text=f"{descricao}\n({pessoa})", font=("Arial", 12)
-            ).grid(row=linha_atual, column=1, padx=15, pady=10, sticky="w")
+
+            ctk.CTkLabel(self.frame_tabela, text=texto_tipo, font=("Arial", 12)).grid(
+                row=linha_atual, column=1, padx=15, pady=10, sticky="w"
+            )
+
             ctk.CTkLabel(self.frame_tabela, text=f"{origem}", font=("Arial", 12)).grid(
                 row=linha_atual, column=2, padx=15, pady=10, sticky="w"
             )
@@ -214,7 +221,6 @@ class TelaDashboard(ctk.CTkFrame):
 
             # Se a demanda estiver pendente, cria um botão verde de 'Concluir'
             if status == "Pendente":
-                # O comando lambda garante que o botão saiba exatamente qual é o ID daquela linha
                 botao_concluir = ctk.CTkButton(
                     frame_status,
                     text="✔",
@@ -310,10 +316,10 @@ class TelaDashboard(ctk.CTkFrame):
         entrada_destino.set("Endereço de Destino")
         entrada_destino.pack(pady=10)
 
-        # 5. Seleção de veiculo (Busca apenas os livres)
+        # 5. Seleção de veiculo (Busca apenas os livres e exibe Modelo e Placa)
         todos_veiculos = self.sistema.buscar_veiculos()
         veiculos_livres = [
-            f"{v[0]} - {v[1]}" for v in todos_veiculos if v[4] == "Livre"
+            f"{v[0]} - {v[2]} ({v[1]})" for v in todos_veiculos if v[4] == "Livre"
         ]
 
         if not veiculos_livres:
@@ -334,66 +340,35 @@ class TelaDashboard(ctk.CTkFrame):
             data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
             descricao = entrada_descricao.get()
             pessoa = entrada_pessoa.get()
-            acolhido = entrada_acolhido.get()  # Pega o nome do paciente
+            acolhido = entrada_acolhido.get()
             origem = entrada_origem.get()
             destino = entrada_destino.get()
             veiculo_selecionado = entrada_veiculo.get()
 
-            # Extrai apenas o ID do veiculo
+            # Puxa só o número do ID para mudar o status
             id_veiculo = (
                 veiculo_selecionado.split(" - ")[0]
                 if " - " in veiculo_selecionado
                 else ""
             )
 
-            # Chama a função atualizada (agora com 7 parâmetros)
+            # Chama a função enviando O TEXTO COMPLETO do carro para ficar legível no Sheets
             self.sistema.cadastrar_demanda(
                 data_horario=data_hora,
                 descricao=descricao,
                 pessoa=pessoa,
                 origem=origem,
                 destino=destino,
-                veiculo=id_veiculo,
+                veiculo=veiculo_selecionado,
                 acolhido=acolhido,
             )
 
-            self.atualizar_tabela_demandas()
-            self.atualizar_cards_resumo()
-            # 3. Fecha a janela flutuante
-            janela_demanda.destroy()
-
-        # --- A FUNÇÃO QUE SALVA OS DADOS ---
-        def salvar_no_banco():
-            # 1. Recolhe todos os dados
-            data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
-            descricao = entrada_descricao.get()
-            pessoa = entrada_pessoa.get()
-            acolhido = entrada_acolhido.get()  # Pega o nome do paciente
-            origem = entrada_origem.get()
-            destino = entrada_destino.get()
-            veiculo_selecionado = entrada_veiculo.get()
-
-            # Extrai apenas o ID do veiculo
-            id_veiculo = (
-                veiculo_selecionado.split(" - ")[0]
-                if " - " in veiculo_selecionado
-                else ""
-            )
-
-            # Chama a função atualizada (agora com 7 parâmetros)
-            self.sistema.cadastrar_demanda(
-                data_horario=data_hora,
-                descricao=descricao,
-                pessoa=pessoa,
-                origem=origem,
-                destino=destino,
-                veiculo=id_veiculo,
-                acolhido=acolhido,
-            )
+            # Muda o carro para "Em Rota", tirando ele da contagem de livres
+            if id_veiculo:
+                self.sistema.atualizar_status_veiculo(id_veiculo, "Em Rota")
 
             self.atualizar_tabela_demandas()
             self.atualizar_cards_resumo()
-            # 3. Fecha a janela flutuante
             janela_demanda.destroy()
 
         # Botão cadastrar (agora aponta para a função salvar_no_banco)

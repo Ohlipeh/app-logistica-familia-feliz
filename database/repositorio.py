@@ -96,27 +96,26 @@ class ControleFrota:
             return []
 
     # --- Função para buscar a demanda ---
+
     def buscar_demandas_recentes(self):
-        # Pega todos os dados da aba e ignora a linha 1 (que são os cabeçalhos [1:])
+        # Pega todos os dados da aba e ignora a linha 1 (cabeçalhos)
         registros = self.aba_demandas.get_all_values()[1:]
 
         resultados = []
         for linha in registros:
-            # Pega as colunas na mesma ordem que o seu painel espera
-            # 0:id_demanda, 1:data, 2:tipo_demanda, 3:origem, 5:status
-            resultados.append((int(linha[0]), linha[1], linha[2], linha[3], linha[5]))
+            # Retorna a linha completa para a tela ter acesso a tudo (incluindo Status e Acolhido)
+            resultados.append(linha)
 
-        # Inverte a lista (para os mais recentes aparecerem primeiro) e pega só os 5 primeiros
+        # Inverte a lista (mais recentes primeiro) e pega só os 5 primeiros
         resultados.reverse()
         return resultados[:5]
 
     # --- Função para atualizar o status da demanda ---
     def atualizar_status_demanda(self, id_demanda, novo_status):
-        # Encontra em qual linha exata (row) está este ID na Coluna 1 da planilha
         celula = self.aba_demandas.find(str(id_demanda), in_column=1)
         if celula:
-            # Atualiza a coluna 6 (Status) daquela linha encontrada
-            self.aba_demandas.update_cell(celula.row, 6, novo_status)
+            # Atualiza a coluna 8 (H) que é o verdadeiro Status
+            self.aba_demandas.update_cell(celula.row, 8, novo_status)
 
     # --- Função para excluir demanda ---
     def excluir_demanda(self, id_demanda):
@@ -132,12 +131,11 @@ class ControleFrota:
         veiculos = self.aba_veiculos.get_all_values()[1:]
         demandas = self.aba_demandas.get_all_values()[1:]
 
-        # Conta veículos livres e em rota (Coluna de Status na planilha Veiculos é o índice 4)
-        livres = sum(1 for v in veiculos if v[4] == "Livre")
-        em_rota = sum(1 for v in veiculos if v[4] == "Em Rota")
+        livres = sum(1 for v in veiculos if len(v) > 4 and v[4] == "Livre")
+        em_rota = sum(1 for v in veiculos if len(v) > 4 and v[4] == "Em Rota")
 
-        # Conta demandas pendentes (Coluna de Status na planilha Demandas é o índice 5)
-        pendentes = sum(1 for d in demandas if d[5] == "Pendente")
+        # O Status da demanda agora é o índice 7 (coluna 8)
+        pendentes = sum(1 for d in demandas if len(d) > 7 and d[7] == "Pendente")
 
         return livres, em_rota, pendentes
 
@@ -160,6 +158,13 @@ class ControleFrota:
             resultados.append((int(linha[0]), linha[1], linha[2], linha[3], linha[4]))
         return resultados
 
+    # --- Função para atualizar o status do veiculo ---
+    def atualizar_status_veiculo(self, id_veiculo, novo_status):
+        celula = self.aba_veiculos.find(str(id_veiculo), in_column=1)
+        if celula:
+            # A coluna de status dos veículos é a 5 (E)
+            self.aba_veiculos.update_cell(celula.row, 5, novo_status)
+
     # --- Função para excluir o veiculo ---
     def excluir_veiculo(self, id_veiculo):
         celula = self.aba_veiculos.find(str(id_veiculo), in_column=1)
@@ -170,10 +175,9 @@ class ControleFrota:
     # --- Função para realizar Check-in ---
     def realizar_checkin(self, id_motorista, id_veiculo, km_inicial):
         data = datetime.now().strftime("%Y-%m-%d %H:%M")
-        registros = self.aba_checkin.get_all_values()
 
-        # Pega o último ID ou começa no 1
-        novo_id = int(registros[-1][0]) + 1 if len(registros) > 1 else 1
+        # Pega o último ID usando a função protegida
+        novo_id = self._gerar_novo_id(self.aba_checkin)
 
         # Insere a linha. Colunas: id_registro, id_motorista, id_veiculo, retirada, km_inicial, devolucao, km_final, obs
         self.aba_checkin.append_row(
@@ -187,10 +191,14 @@ class ControleFrota:
         registros = self.aba_checkin.get_all_values()
 
         linha_alvo = None
-        # O reversed() faz ele procurar de baixo para cima (do mais recente para o mais antigo)
         for index, linha in reversed(list(enumerate(registros))):
             if index > 0:
-                # Verifica se o carro é o mesmo e se a devolução (coluna 6) está em branco
+                # PREVENÇÃO DE ERRO: Garante que a linha tem 8 espaços, mesmo se o Sheets ocultar os vazios
+                linha = list(linha)
+                while len(linha) < 8:
+                    linha.append("")
+
+                # str(linha[2]) é o ID do carro, linha[5] é a data de devolução vazia
                 if str(linha[2]) == str(id_veiculo) and linha[5] == "":
                     linha_alvo = index + 1
                     break
@@ -199,13 +207,12 @@ class ControleFrota:
             self.aba_checkin.update_cell(linha_alvo, 6, data)
             self.aba_checkin.update_cell(linha_alvo, 7, km_final)
 
-            # Força a gravação da observação (mesmo se estiver vazia)
             texto_obs = str(observacoes) if observacoes else "Sem observações"
             self.aba_checkin.update_cell(linha_alvo, 8, texto_obs)
 
-            print(
-                f"Checkout realizado para o veículo ID {id_veiculo} na linha {linha_alvo}."
-            )
+            # Libera o veículo para voltar ao painel de Livres
+            self.atualizar_status_veiculo(id_veiculo, "Livre")
+            print(f"Checkout realizado na linha {linha_alvo}.")
         else:
             print("Nenhum check-in em aberto encontrado para este veículo.")
 

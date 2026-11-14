@@ -5,3 +5,9 @@ database/token.json
 # Ignorar pastas automáticas do Python
 __pycache__/
 *.pyc
+
+# Ignorar algumas pastas
+build
+dist
+interface_gestao.spec
+site.zip

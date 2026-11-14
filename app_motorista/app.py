@@ -23,11 +23,15 @@ def index():
 def checkin():
     if request.method == "POST":
         motorista = request.form.get("id_motorista")
-        # O select agora envia o ID do veículo que já estava amarrado à demanda
-        veiculo = request.form.get("id_veiculo")
+        veiculo_texto = request.form.get("id_veiculo")
         km = request.form.get("km_inicial")
 
-        sistema.realizar_checkin(motorista, veiculo, km)
+        # Corta a string "1 - HB20..." e pega só o ID "1" para fazer o check-in perfeito
+        id_veiculo = (
+            veiculo_texto.split(" - ")[0] if " - " in veiculo_texto else veiculo_texto
+        )
+
+        sistema.realizar_checkin(motorista, id_veiculo, km)
         return redirect(url_for("index"))
 
     # Busca as demandas recentes em vez dos veículos soltos
@@ -50,14 +54,19 @@ def checkin():
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
     if request.method == "POST":
-        veiculo = request.form.get("id_veiculo")
+        veiculo_texto = request.form.get("id_veiculo")
         km_final = request.form.get("km_final")
-
-        # NOVO: Puxa o texto que o motorista digitou
         observacoes = request.form.get("observacoes")
 
-        # Chama a função enviando também as observações
-        sistema.realizar_checkout(veiculo, km_final, observacoes)
+        # Pega apenas o ID do veículo, cortando textos como "1 - HB20..."
+        id_veiculo = (
+            str(veiculo_texto).split(" - ")[0]
+            if " - " in str(veiculo_texto)
+            else veiculo_texto
+        )
+
+        # Chama a função usando o ID limpo
+        sistema.realizar_checkout(id_veiculo, km_final, observacoes)
 
         return redirect(url_for("index"))
 
